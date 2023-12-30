@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <link rel="stylesheet" href="style.css">
+        <script src="main.js" defer></script>
+        <title>Break(it)Down</title>
+    </head>
+
+    <body>
+        <div id="overlay">
+        <!--This div is just a gray overlay for when a popup window is displayed-->
+        </div>
+        <table>
+            <tr>
+                <th>Project Name</th>
+                <th>Last Finished</th>
+                <th>Current Task</th>
+                <th>Check-In</th>
+            </tr>
+            <tr>
+                <td>CS50x</td>
+                <td>Pset: Finance</td>
+                <td><span class="current-task">
+                    Final Project
+                    <div class="popup tasks">
+                        Testing pop-ups
+                        <button class="close">Close</button>
+                    </div>
+                    </span>
+                    <button class="finish-task table" id="Final Project_finishTask">V</button>
+                </td>
+                <td><input type="textarea" placeholder="Today's progress is..."><button class="check-in table" id="Final Project_checkIn">^</button></td>
+            </tr>
+            <tr>
+                <td><button class="plus" id="new-project">+</button></td>
+            </tr>
+        </table>
+
+        <!--This is for the pop up window when clicking the (+) button-->
+        <div class="popup window">
+            <label>What's your new project?</label>
+            <input type="text">
+            <button>Note project</button>
+            <button id="closeNewProject">Close</button>
+        </div>
+    </body>
+</html>
