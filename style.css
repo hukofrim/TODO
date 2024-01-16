@@ -1,3 +1,124 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-flow: column nowrap;
+    font-family: 'Calibri', sans-serif;
+    width: 100vw;
+}
+
+button {
+    background-color: #ffffff;
+    border: 1px solid #434343;
+    border-radius: 0.63rem;
+    color:#434343;
+    font-size: .85rem;
+    padding: 0.5rem 1rem;
+}
+
+    button:hover {
+        background-color: #434343;
+        color: #ffffff;
+    }
+
+input {
+    border-top: none;
+    border-right: none;
+    border-left: none;
+    border-bottom: #434343 1px solid;
+}
+
+table,th,td {
+    border: #c7c7c7 solid 1px;
+    border-collapse: collapse;
+    padding: 0.5rem 1rem;
+}
+
+    td.current {
+        border-right: none;
+    }
+
+    td.finishTaskButtons {
+        border-left: none;
+    }
+
+.icon {
+    width: 1.5rem;
+}
+
+    .icon.check {
+        vertical-align: baseline;
+    }
+
+.popup {
+    background-color: #ffffff;
+    border: 1px solid #434343;
+    border-radius: 0.63rem;
+    color: #434343;
+    padding: 0.5rem 2rem;
+}
+    
+    .popup .footer {
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: flex-end;
+        margin: 1rem 0;
+    }
+
+    .popup .header {
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: space-between;
+        margin: 1rem 0rem;
+    }
+
+    .popup.side {
+        display: none;
+        position: absolute;
+    }
+
+    .popup.window {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1000;
+    }
+
+        .popup.window form{
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: repeat(3, auto);
+            padding: 1rem 1rem;
+            column-gap: 2rem;
+            row-gap: 1.5rem;
+        }
+
+        .popup.window input[type="text"] {
+            grid-column-end: span 2;
+        }
+
+#newProjectButton {
+    padding: .1rem .5rem;
+    width: 100%;
+}
+
+#overlay {
+    background-color: #c7c7c75c;
+    display: none;
+    position: fixed;
+    height: 100vh;
+    width: 100vw;
+    z-index:500;
+}
+
+/*
 body {
     font-family: Calibri, Helvetica, sans-serif;
     margin: 0;
@@ -84,3 +205,4 @@ table input {
     border-right: none;
     border-bottom: #9e9d9d 0.5px solid;
 }
+*/
