@@ -104,7 +104,7 @@ table,th,td {
             grid-column-end: span 2;
         }
 
-#newProjectButton {
+#newProjectButton, .newTaskButton {
     padding: .1rem .5rem;
     width: 100%;
 }
