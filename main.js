@@ -12,7 +12,7 @@ const dateStarted = document.querySelector("#dateStarted");
 const newTaskField = document.querySelector("#newTask");
 const tbody = document.querySelector('tbody');
 
-// Back-end objects
+// Back-end stuff
 let projects = [];
 let highestKey = 0; // TODO: onload, update highestKey based on the last item on project list
 let openedSidePopup; // tracks the current open side popup. Only 1 can be open at a time
@@ -259,4 +259,60 @@ function clearTable() {
         tbody.removeChild(tbody.firstChild);
     }
     console.log('Removed all table contents.')
+}
+
+
+// testing for onload function (ez took me about 5 minutes lol. Thank you past me for creating modular functions)
+let temp = new Project('CS50', ['Finish final project', 'Create README file', 'Video'], Date('01/20/2024'));
+highestKey++;
+projects.push(temp);
+
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOM fully loaded and parsed");
+    reloadTable();
+});
+
+// IDB stuff
+// Initialize db in a global var
+let db;
+
+openDb();
+retrieveFromDb((list) => { // Google callback functions if you can't remember what this does
+    projects = list;
+});
+
+function openDb() {
+    const request = window.indexedDB.open("projectDatabase", 1);
+    
+    request.onerror = (e) => {
+        console.log('Error opening DB')
+    };
+    
+    request.onsuccess = (e) => {
+        db = e.target.result;
+        db.onerror = (e) => {
+            console.error(`Database error: ${e.target.errorCode}`);
+        }
+    };
+
+    // the actual meat of the function that creates object stores
+    request.onupgradeneeded = (e) => {
+        const projectStore = db.createObjectStore('projects', {keyPath: 'key'});
+        
+        const index = projectStore.createIndex('nameIndex', 'name', {unique: false});
+    };
+}
+
+function retrieveFromDb(handler) {
+    if (!db) {
+        console.log('No opened DB.');
+        return;
+    };
+    const request = db.transaction(['projects']).objectStore('projects').getAll();
+    request.onsuccess = (e) => {
+        list = e.target.result;
+        console.log(list);
+        handler(list);
+    };
+    // So basiaclly, handler is a function that will do its magic on list. It's basically storing functions in variables and then calling them later
 }
