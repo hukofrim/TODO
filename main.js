@@ -29,6 +29,14 @@ class Project {
     }
 }
 
+function updateHighestKey() {
+    for (const project of projects) {
+        if (project.key > highestKey) {
+            highestKey = project.key;
+        };
+    };
+}
+
 function finishTask(e) {
     const currentRow = e.currentTarget.closest('tr');
     const projectName = currentRow.querySelector('.projectName').textContent;
@@ -41,6 +49,7 @@ function finishTask(e) {
         project[0].lastFinished = project[0].tasks.shift();
         updateRow(currentRow, project[0]);
         console.log(`"${project[0].lastFinished}" moved to Last Finished.`);
+        updateInDB(project[0]);
     }
     else {
         console.log(`No task available.`)
@@ -55,6 +64,7 @@ addNewTask.addEventListener('click', () => {
     if (newTaskField.value) {
         newTaskTarget.tasks.push(newTaskField.value);
         updateRow(currentRow, newTaskTarget);
+        updateInDB(newTaskTarget);
         newTaskField.value = null;
     }  
 })
@@ -84,7 +94,7 @@ function openTaskPopup(e) {
     const popup = e.currentTarget.querySelector('.popup');
 
     if (e.target !== e.currentTarget && e.target !== e.currentTarget.querySelector('span')) { // currentTarget is the element where the listener is attached to. target is the element that triggered the event
-        return;
+        return; // AKA proceed only if the td and span is clicked, not the actual popup
     }
 
     const isHidden = getComputedStyle(popup).display === 'none';
@@ -152,6 +162,9 @@ function newProject(e) {
 
         // Reload table to reflect new project
         createNewRow(project);
+
+        // Save to db
+        addToDB(project);
     }
     else {
         alert("Make sure all input fields have a value.")
@@ -276,12 +289,13 @@ document.addEventListener('DOMContentLoaded', () => {
 // Initialize db in a global var
 let db;
 
-openDb();
-retrieveFromDb((list) => { // Google callback functions if you can't remember what this does
+openDb(() => retrieveFromDb((list) => { // Google callback functions if you can't remember what this does
     projects = list;
-});
+    updateHighestKey();
+    reloadTable();
+}));
 
-function openDb() {
+function openDb(callback) {
     const request = window.indexedDB.open("projectDatabase", 1);
     
     request.onerror = (e) => {
@@ -290,20 +304,24 @@ function openDb() {
     
     request.onsuccess = (e) => {
         db = e.target.result;
+        console.log('DB opened');
         db.onerror = (e) => {
             console.error(`Database error: ${e.target.errorCode}`);
         }
+        callback();
     };
 
     // the actual meat of the function that creates object stores
     request.onupgradeneeded = (e) => {
+        db = e.target.result;
         const projectStore = db.createObjectStore('projects', {keyPath: 'key'});
-        
+        console.log('DB created');
         const index = projectStore.createIndex('nameIndex', 'name', {unique: false});
     };
 }
 
 function retrieveFromDb(handler) {
+    console.log('Retreiving data from db...')
     if (!db) {
         console.log('No opened DB.');
         return;
@@ -314,5 +332,25 @@ function retrieveFromDb(handler) {
         console.log(list);
         handler(list);
     };
-    // So basiaclly, handler is a function that will do its magic on list. It's basically storing functions in variables and then calling them later
+    // So basically, handler is a function that will do its magic on list. It's basically storing functions in variables and then calling them later
+}
+
+function addToDB(project) {
+    const request = db.transaction(['projects'], 'readwrite').objectStore('projects').add(project);
+    request.onsuccess = (e) => {
+        console.log('Project added to DB.');
+    };
+    request.onerror = (e) => {
+        console.log('Project not added to db');
+    };
+}
+
+function updateInDB(project) {
+    const request = db.transaction(['projects'], 'readwrite').objectStore('projects').put(project);
+    request.onsuccess = (e) => {
+        console.log('Project updated.');
+    };
+    request.onerror = (e) => {
+        console.log('Project not updated.');
+    };
 }
