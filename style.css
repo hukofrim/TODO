@@ -82,6 +82,15 @@ table,th,td {
         position: absolute;
     }
 
+        .popup.side table {
+            border: 0px;
+        }
+
+        .popup.side .body td {
+            border: 0px;
+            padding: 8px 4px;
+        }
+
     .popup.window {
         display: none;
         position: fixed;

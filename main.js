@@ -37,24 +37,54 @@ function updateHighestKey() {
     };
 }
 
+function returnObj(objName, list) {
+    // Get the object from list that matches objName
+    const obj = list.find((object) => {
+        return object.name === objName;
+    });
+    return obj;
+}
+
 function finishTask(e) {
     const currentRow = e.currentTarget.closest('tr');
     const projectName = currentRow.querySelector('.projectName').textContent;
 
-    const project = projects.filter((object) => {
-        return object.name === projectName;
-    })
+    const project = returnObj(projectName, projects);
 
-    if (project[0].tasks.length > 0) {
-        project[0].lastFinished = project[0].tasks.shift();
-        updateRow(currentRow, project[0]);
-        console.log(`"${project[0].lastFinished}" moved to Last Finished.`);
-        updateInDB(project[0]);
+    if (project.tasks.length > 0) {
+        project.lastFinished = project.tasks.shift();
+        updateRow(currentRow, project);
+        updateInDB(project);
+        console.log(`"${project.lastFinished}" moved to Last Finished.`);
     }
     else {
         console.log(`No task available.`)
     }
+}
+
+function deleteTask(e) {
+    // Get the project row and name
+    const currentRow = e.target.parentElement.parentElement.parentElement.closest('tr');
+    const projectName = currentRow.querySelector('.projectName').textContent;
+
+    // Get the specific task row and name to be deleted
+    const currentTaskRow = e.target.closest('tr')
+    const taskName = currentTaskRow.querySelector('td.taskName').textContent; 
+
+    // Get the actual project object and find the index of our target task in its tasklist
+    const project = returnObj(projectName, projects);
+    const taskIndex = project.tasks.indexOf(taskName);
     
+    // If task is found, remove it at its index, update the prject row,  update in db, and log
+    if (taskIndex > -1) {
+        project.tasks.splice(taskIndex, 1);
+        updateRow(currentRow, project);
+        updateInDB(project);
+        console.log(`"${taskName}" task deleted.`);
+    }
+    else {
+        console.log(`"${taskName}" not found.`);
+    }
 }
 
 addNewTask.addEventListener('click', () => {
@@ -112,14 +142,44 @@ function openTaskPopup(e) {
 }
 
 function listTask(project) {
-    const ol = document.createElement('ol');
+    const table = document.createElement('table');
+    table.setAttribute('class', 'body')
     for (const task of project.tasks) {
-        const li = document.createElement('li');
-        li.textContent = task;
-        ol.appendChild(li);
+        const tr = document.createElement('tr');
+        const moveToTop = document.createElement('td');
+            const topButton = document.createElement('img');
+        const moveUp = document.createElement('td');
+            const upButton = document.createElement('img');
+        const delTask = document.createElement('td');
+            const delTaskButton = document.createElement('img');
+        const taskTitle = document.createElement('td');
+        
+        topButton.setAttribute('class', 'icon top');
+        topButton.setAttribute('src', 'images/top.svg');
+        topButton.addEventListener('click', moveToTop); //function does not exist
+        moveToTop.appendChild(topButton);
+
+        upButton.setAttribute('class', 'icon up');
+        upButton.setAttribute('src', 'images/up.svg');
+        upButton.addEventListener('click', moveUp); //function does not exist
+        moveUp.appendChild(upButton);
+
+        delTaskButton.setAttribute('class', 'icon delTask');
+        delTaskButton.setAttribute('src', 'images/delete.svg');
+        delTaskButton.addEventListener('click', deleteTask);
+        delTask.appendChild(delTaskButton);
+
+        taskTitle.textContent = task;
+        taskTitle.setAttribute('class', 'taskName');
+
+        tr.appendChild(moveToTop);
+        tr.appendChild(moveUp);
+        tr.appendChild(delTask);
+        tr.appendChild(taskTitle);
+        table.appendChild(tr);
     }
 
-    return ol;
+    return table;
 }
 
 // New Project or Task
@@ -190,10 +250,10 @@ function updateRow(row, project) {
     else {
         row.querySelector('.current span').textContent = 'Add task...';
     }
-    let ol = row.querySelector('ol');
-    row.querySelector('.popup').removeChild(ol);
-    ol = listTask(project);
-    row.querySelector('.popup').insertBefore(ol, row.querySelector('.popup').children[1]);
+    let body = row.querySelector('.current .popup .body');
+    row.querySelector('.popup').removeChild(body);
+    body = listTask(project);
+    row.querySelector('.popup').insertBefore(body, row.querySelector('.popup').children[1]);
 }
 
 function createNewRow(project) {
@@ -234,7 +294,7 @@ function createNewRow(project) {
             header.appendChild(title);
             header.appendChild(closeButton);
 
-            const ol = listTask(project);
+            const body = listTask(project);
 
             footer.setAttribute('class', 'footer');
             addTaskButton.textContent = '+';
@@ -247,7 +307,7 @@ function createNewRow(project) {
             });
             footer.appendChild(addTaskButton);
         sidePopup.appendChild(header);
-        sidePopup.appendChild(ol);
+        sidePopup.appendChild(body);
         sidePopup.appendChild(footer);
     
     icon.setAttribute('class', 'icon check');
@@ -354,3 +414,22 @@ function updateInDB(project) {
         console.log('Project not updated.');
     };
 }
+
+
+/*
+delete feature
+- Create a delete icon when the projects and tasks are created
+    - Add to existing functions createNewRow() and listTask()
+- Add event listener to delete task or project from the projects list
+    - delete task and delete table functions
+    - You can base it off of finishTask(). Literally the same
+- Update row or reload table
+
+movetotop feature
+- Modify listTask() structure to make way for 2 icons in each row
+    - Might need to turn it into a table
+- Add event listeners to the new buttons that does array operations with matching insertBefore() UI magic
+    - Make this into a function
+    - updateInDB()
+
+*/
