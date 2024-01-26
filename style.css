@@ -26,11 +26,19 @@ button {
         color: #ffffff;
     }
 
+header {
+    margin: 20px auto;
+}
+
 input {
     border-top: none;
     border-right: none;
     border-left: none;
     border-bottom: #434343 1px solid;
+}
+
+main {
+    margin: 40px auto;
 }
 
 table,th,td {
@@ -45,6 +53,7 @@ table,th,td {
 
     td.finishTaskButtons {
         border-left: none;
+        text-align: right;
     }
 
 .icon {
@@ -79,11 +88,13 @@ table,th,td {
 
     .popup.side {
         display: none;
+        min-width: 15rem;
         position: absolute;
     }
 
         .popup.side table {
             border: 0px;
+            margin: 5px auto;
         }
 
         .popup.side .body td {
@@ -118,6 +129,10 @@ table,th,td {
     width: 100%;
 }
 
+#newTaskPopup input{
+    min-width: 20rem;
+}
+
 #overlay {
     background-color: #c7c7c75c;
     display: none;
@@ -125,6 +140,10 @@ table,th,td {
     height: 100vh;
     width: 100vw;
     z-index:500;
+}
+
+#projectsTable {
+    min-width: 50vw;
 }
 
 /*

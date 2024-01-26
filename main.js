@@ -14,7 +14,7 @@ const tbody = document.querySelector('tbody');
 
 // Back-end stuff
 let projects = [];
-let highestKey = 0; // TODO: onload, update highestKey based on the last item on project list
+let highestKey = 0; // tracks which key to assign for new projects
 let openedSidePopup; // tracks the current open side popup. Only 1 can be open at a time
 let newTaskTarget; // tracks which project is currently being accessed by the task addition functions
 
@@ -156,12 +156,12 @@ function listTask(project) {
         
         topButton.setAttribute('class', 'icon top');
         topButton.setAttribute('src', 'images/top.svg');
-        topButton.addEventListener('click', moveToTop); //function does not exist
+        topButton.addEventListener('click', moveTop);
         moveToTop.appendChild(topButton);
 
         upButton.setAttribute('class', 'icon up');
         upButton.setAttribute('src', 'images/up.svg');
-        upButton.addEventListener('click', moveUp); //function does not exist
+        upButton.addEventListener('click', shiftUp); //function does not exist
         moveUp.appendChild(upButton);
 
         delTaskButton.setAttribute('class', 'icon delTask');
@@ -174,13 +174,73 @@ function listTask(project) {
 
         tr.appendChild(moveToTop);
         tr.appendChild(moveUp);
-        tr.appendChild(delTask);
         tr.appendChild(taskTitle);
+        tr.appendChild(delTask);
         table.appendChild(tr);
     }
 
     return table;
 }
+
+function moveTop(e) {
+    // Get the project row and name
+    const currentRow = e.target.parentElement.parentElement.parentElement.closest('tr');
+    const projectName = currentRow.querySelector('.projectName').textContent;
+
+    // Get the specific task row and name to be updated
+    const currentTaskRow = e.target.closest('tr')
+    const taskName = currentTaskRow.querySelector('td.taskName').textContent; 
+
+    // Get the actual project object and find the index of our target task in its tasklist
+    const project = returnObj(projectName, projects);
+    const taskIndex = project.tasks.indexOf(taskName);
+
+    // The meat of the function
+    if (taskIndex > 0) { // If task is found and it is not the first
+        // Backend
+        const target = project.tasks.splice(taskIndex, 1)[0]; // retrieve target task
+        project.tasks.unshift(target); // Insert target into 0 index
+
+        // Just refresh the whole row. UI manipulation whomst've?
+        updateInDB(project);
+        updateRow(currentRow, project);
+        console.log(`"${taskName}" task moved to top.`);
+    }
+    else {
+        console.log(`"${taskName}" not found.`);
+    }
+}
+    
+function shiftUp(e) {    
+    // Get the project row and name
+    const currentRow = e.target.parentElement.parentElement.parentElement.closest('tr');
+    const projectName = currentRow.querySelector('.projectName').textContent;
+
+    // Get the specific task row and name to be updated
+    const currentTaskRow = e.target.closest('tr')
+    const taskName = currentTaskRow.querySelector('td.taskName').textContent; 
+
+    // Get the actual project object and find the index of our target task in its tasklist
+    const project = returnObj(projectName, projects);
+    const taskIndex = project.tasks.indexOf(taskName);
+
+    // The meat of the function
+    if (taskIndex > 0) { // If task is found and it is not the first
+        // Backend
+        const temp = project.tasks[taskIndex]; // copy task into temp var
+        project.tasks[taskIndex] = project.tasks[taskIndex - 1]; // Copy the task 1 place before into the taskTarget
+        project.tasks[taskIndex - 1] = temp; // Copy target task into the preceding index
+
+        // Just refresh the whole row. UI manipulation whomst've?
+        updateInDB(project);
+        updateRow(currentRow, project);
+        console.log(`"${taskName}" task moved up.`);
+    }
+    else {
+        console.log(`"${taskName}" not found.`);
+    }
+}
+    
 
 // New Project or Task
 newProjectButton.addEventListener('click', () => {
@@ -281,7 +341,12 @@ function createNewRow(project) {
     currentTask.setAttribute('class', 'current');
     currentTask.addEventListener('click', openTaskPopup);
     
-        taskName.textContent = project.tasks[0];
+        if (project.tasks[0]) {
+            taskName.textContent = project.tasks[0];
+        }
+        else {
+            taskName.textContent = 'Add task...';
+        }
         taskName.setAttribute('class', 'button');
 
         // popup construction
@@ -334,12 +399,6 @@ function clearTable() {
     console.log('Removed all table contents.')
 }
 
-
-// testing for onload function (ez took me about 5 minutes lol. Thank you past me for creating modular functions)
-let temp = new Project('CS50', ['Finish final project', 'Create README file', 'Video'], Date('01/20/2024'));
-highestKey++;
-projects.push(temp);
-
 document.addEventListener('DOMContentLoaded', () => {
     console.log("DOM fully loaded and parsed");
     reloadTable();
@@ -349,7 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Initialize db in a global var
 let db;
 
-openDb(() => retrieveFromDb((list) => { // Google callback functions if you can't remember what this does
+openDb(() => retrieveFromDb((list) => { // Anonymous callback so I can retrieve the db data since return does not work
     projects = list;
     updateHighestKey();
     reloadTable();
